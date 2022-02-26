@@ -8,5 +8,7 @@ CREATE TABLE artists
     category    VARCHAR(20) NOT NULL CHECK (CATEGORY IN ('ACTOR', 'PAINTER', 'SCULPTOR')),
     birthday    DATE,
     email       VARCHAR(50),
-    notes       VARCHAR(200)
+    notes       VARCHAR(200),
+    updated_at  TIMESTAMP,
+    created_at  TIMESTAMP
 );
