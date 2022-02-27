@@ -2,6 +2,8 @@ package com.rize.test.handler;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.rize.test.exception.ArtistNotFoundException;
+import com.rize.test.model.Category;
+import com.rize.test.model.ErrorDto;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,11 +18,11 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.validation.ConstraintViolationException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import javax.validation.constraints.NotNull;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.lang.String.format;
 
 @ControllerAdvice
 public class RizeGlobalResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
@@ -29,73 +31,73 @@ public class RizeGlobalResponseEntityExceptionHandler extends ResponseEntityExce
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                   HttpHeaders headers,
                                                                   HttpStatus status, WebRequest request) {
-
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("status", status.value());
-
         List<String> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .collect(Collectors.toList());
 
-        body.put("errors", errors);
-
-        return new ResponseEntity<>(body, headers, status);
-
+        return new ResponseEntity<>(new ErrorDto(errors), headers, status);
     }
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
                                                                   HttpHeaders headers,
                                                                   HttpStatus status, WebRequest request) {
-        if(ex.getMostSpecificCause() instanceof InvalidFormatException
-                && ex.getMessage().contains("Cannot deserialize value of type `java.util.Date` from String")){
-            Map<String, Object> body = new LinkedHashMap<>();
-            body.put("status", status.value());
-
-            List<String> errors = new ArrayList<>();
-            errors.add(String.format("Cannot deserialize value of Date from String: %s. Please provide the value in yyyy-mm-dd format", getErrorValue(ex)));
-
-            body.put("errors", errors);
-
-            return new ResponseEntity<>(body, headers, status);
+        ErrorDto errorDto = null;
+        Throwable cause = ex.getMostSpecificCause();
+        if(cause instanceof InvalidFormatException
+                || cause instanceof IllegalArgumentException
+                && ex.getMessage() != null){
+            errorDto = handleError(ex.getMessage());
         }
+
+        if(errorDto != null){
+            return new ResponseEntity<>(errorDto, headers, status);
+        }
+
         return super.handleHttpMessageNotReadable(ex, headers, status, request);
     }
 
     @ResponseBody
     @ExceptionHandler(ArtistNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String artistNotFoundHandler(ArtistNotFoundException ex) {
-        return ex.getMessage();
+    public ResponseEntity<Object> artistNotFoundHandler(ArtistNotFoundException ex) {
+        return new ResponseEntity<>(new ErrorDto(ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ResponseBody
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Object> constraintViolationExceptionHandler(ConstraintViolationException ex) {
-        Map<String, Object> body = new LinkedHashMap<>();
+        return new ResponseEntity<>(new ErrorDto(getErrorValue(ex)), HttpStatus.BAD_REQUEST);
+    }
 
+    private ErrorDto handleError(@NotNull String message){
         List<String> errors = new ArrayList<>();
-        errors.add(getErrorValue(ex));
+        if(message.contains("Cannot deserialize value of type `java.util.Date` from String")){
+            errors.add(format("Invalid Date value: %s. Please provide the value in yyyy-mm-dd format",
+                    message.substring(message.indexOf("String \"") + 8, message.indexOf("\":"))));
+        }
 
-        body.put("errors", errors);
+        if(message.contains("JSON parse error: No enum constant com.rize.test.model.Category")){
+            errors.add(format("Category value %s is incorrect. It must be in %s",
+                    message.substring(message.indexOf("Category.") + 9, message.indexOf(";")),
+                    Arrays.toString(Category.values())));
+        }
 
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+        if(!errors.isEmpty()){
+            return new ErrorDto(errors);
+        }
+
+        return null;
     }
 
-    private String getErrorValue(HttpMessageNotReadableException ex){
+    private String getErrorValue(@NotNull ConstraintViolationException ex){
         String message = ex.getMessage();
-        return (message != null ? message.substring(message.indexOf("String \"") + 8, message.indexOf("\":")) : null);
-    }
-
-    private String getErrorValue(ConstraintViolationException ex){
-        String message = ex.getMessage();
-        if(message.contains(":")){
+        if(message != null && message.contains(":")){
             return message.substring(message.indexOf(":") + 2);
         }
         return message;
     }
-
 }
