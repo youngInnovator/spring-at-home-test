@@ -3,6 +3,7 @@ package com.rize.test.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -20,6 +21,7 @@ import java.util.Date;
 @Entity
 @Setter
 @Getter
+@Builder
 @Table(name = "artists")
 public class Artist implements Serializable {
     private static final long serialVersionUID = 1L;
