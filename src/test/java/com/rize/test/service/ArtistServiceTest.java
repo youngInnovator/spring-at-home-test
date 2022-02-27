@@ -18,6 +18,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import javax.validation.ConstraintViolationException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -36,7 +37,7 @@ class ArtistServiceTest {
     @InjectMocks
     private ArtistService artistService;
 
-    private static final Date BIRTHDAY_DATE = Date.from(Instant.now());
+    private static final Date BIRTHDAY_DATE = new Date();
 
     @BeforeEach
     public void setup(){

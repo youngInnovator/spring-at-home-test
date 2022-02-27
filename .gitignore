@@ -1,4 +1,5 @@
 # Default ignored files
 build
+target
 .idea
 .gradle
