@@ -69,7 +69,7 @@ public class ArtistCucumberTestDefinition {
                 .firstName(firstName)
                 .lastName(lastName)
                 .category(Category.valueOf(category))
-                .birthday(new SimpleDateFormat("yyyy-MM-dd").parse(dateOfBirth))
+                .birthday(LocalDate.parse(dateOfBirth))
                 .email(email)
                 .build();
 
@@ -83,7 +83,7 @@ public class ArtistCucumberTestDefinition {
                 .firstName("firstName")
                 .lastName("lastName")
                 .category(Category.ACTOR)
-                .birthday(new Date())
+                .birthday(LocalDate.now())
                 .email("test@test.com")
                 .build();
 
@@ -124,6 +124,11 @@ public class ArtistCucumberTestDefinition {
         findArtists("/" + artistId);
     }
 
+    @When("I send request to find artist by id which doesn't exist")
+    public void iSendRequestToFindArtistByIdWhichDoesNotExist() {
+        findArtists("/" + 200);
+    }
+
     @Then("the response will return status {int} and firstName {string}, middleName {string}, lastName {string}, category {string}, birthday {string}, email {string} and notes {string}")
     public void theResponseWillReturnStatusAndFirstNameMiddleNameLastNameCategoryBirthdayEmailAndNotes(
             int status, String firstName, String middleName, String lastName, String category, String birthday,
@@ -138,13 +143,12 @@ public class ArtistCucumberTestDefinition {
                 .middleName(isNull(middleName))
                 .lastName(lastName)
                 .category(Category.valueOf(category))
-                .birthday(new SimpleDateFormat("yyyy-MM-dd").parse(birthday))
+                .birthday(LocalDate.parse(birthday))
                 .email(email)
                 .notes(isNull(notes))
                 .build();
 
-        assertThat(artist).usingRecursiveComparison().ignoringFields("birthday").isEqualTo(expectedArtist);
-        assertThat(toDate(artist.getBirthday())).isEqualTo(toDate(expectedArtist.getBirthday()));
+        assertThat(artist).usingRecursiveComparison().isEqualTo(expectedArtist);
     }
 
     @Then("the response will return status {int} and error contains {string}")
@@ -170,16 +174,29 @@ public class ArtistCucumberTestDefinition {
 
     @And("result will contain {int} entries")
     public void resultWillContainNumberOfRecordsEntries(int numberOfRecords) {
-        Artist[] artists;
+        Artist[] artists = parseArtistArray();
+        assertThat(artists.length).isEqualTo(numberOfRecords);
+    }
+
+    private Artist[] parseArtistArray() {
         try {
-            artists = response.assertThat()
+            return response.assertThat()
                     .extract()
                     .as(Artist[].class);
         } catch (Exception ex) {
-            artists = new Artist[]{};
+            return parseArtist();
         }
+    }
 
-        assertThat(artists.length).isEqualTo(numberOfRecords);
+    private Artist[] parseArtist() {
+        try {
+            Artist artist = response.assertThat()
+                    .extract()
+                    .as(Artist.class);
+            return new Artist[]{artist};
+        } catch (Exception ex) {
+            return new Artist[]{};
+        }
     }
 
     private String buildSearchString(String category, String birthMonth, String search) {
@@ -221,11 +238,7 @@ public class ArtistCucumberTestDefinition {
                 .when().get("/artists" + query).then();
     }
 
-    private LocalDate toDate(Date date) {
-        return LocalDate.ofInstant(date.toInstant(), ZoneId.systemDefault());
-    }
-
-    private String isNull(String value){
+    private String isNull(String value) {
         return hasText(value) ? value : null;
     }
 }

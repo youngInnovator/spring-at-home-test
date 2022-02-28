@@ -1,7 +1,5 @@
 package com.rize.test.service;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.rize.test.exception.ArtistNotFoundException;
 import com.rize.test.model.Artist;
 import com.rize.test.model.Category;
@@ -10,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -20,14 +17,12 @@ import org.mockito.quality.Strictness;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.validation.ConstraintViolationException;
+import java.time.LocalDate;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -40,10 +35,10 @@ class ArtistServiceTest {
     @InjectMocks
     private ArtistService artistService;
 
-    private static final Date BIRTHDAY_DATE = new Date();
+    private static final LocalDate BIRTHDAY_DATE = LocalDate.now();
 
     @BeforeEach
-    public void setup(){
+    public void setup() {
         Artist artist = Artist.builder()
                 .firstName("FirstName")
                 .lastName("LastName")
@@ -76,7 +71,7 @@ class ArtistServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({",,","ACTOR,,",",Fir,",",,10","ACTOR,Fir,","ACTOR,,10",",Fir,10","ACTOR,Fir,10"})
+    @CsvSource({",,", "ACTOR,,", ",Fir,", ",,10", "ACTOR,Fir,", "ACTOR,,10", ",Fir,10", "ACTOR,Fir,10"})
     void testFindArtistsForValidValues(String category, String search, Integer birthdayMonth) {
         // When
         List<Artist> artists = artistService.findArtists(category, search, birthdayMonth);
@@ -95,16 +90,16 @@ class ArtistServiceTest {
     }
 
     @Test
-    void testSaveArtist(){
+    void testSaveArtist() {
         artistService.saveArtist(any(Artist.class));
     }
 
     @Test
-    void testDeleteArtist(){
+    void testDeleteArtist() {
         artistService.deleteArtist(any(Artist.class));
     }
 
-    private void assertArtist(Artist artist){
+    private void assertArtist(Artist artist) {
         assertEquals("FirstName", artist.getFirstName());
         assertEquals("LastName", artist.getLastName());
         assertEquals(Category.ACTOR, artist.getCategory());

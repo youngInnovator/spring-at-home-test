@@ -51,12 +51,19 @@ Feature: Verify Artist Operations
     And Artist exist in system with firstName "resty" lastName "yart" category "PAINTER" dateOfBirth "2021-11-10" and email "test@test.com"
     When I send request to find all artists
     Then the response will return status 200
-    And result will contain 3 entries
+    And result will contain 3 entry(s)
 
   Scenario: Find artist by id
     Given Artist exist in system with firstName "yarti" lastName "grad" category "ACTOR" dateOfBirth "2021-12-10" and email "test@test.com"
     When I send request to find artist by id
     Then the response will return status 200
+    And result will contain 1 entries
+
+  Scenario: Find artist by id that doesn't exist
+    Given Artist exist in system with firstName "yarti" lastName "grad" category "ACTOR" dateOfBirth "2021-12-10" and email "test@test.com"
+    When I send request to find artist by id which doesn't exist
+    Then the response will return status 404
+    And result will contain 0 entries
 
   Scenario: Delete existing artist
     Given Artist exist in system

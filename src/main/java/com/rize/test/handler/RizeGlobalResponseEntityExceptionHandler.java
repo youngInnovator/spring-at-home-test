@@ -1,6 +1,5 @@
 package com.rize.test.handler;
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.rize.test.exception.ArtistNotFoundException;
 import com.rize.test.model.Category;
 import com.rize.test.model.ErrorDto;
@@ -19,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.NotNull;
+import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,7 +48,7 @@ public class RizeGlobalResponseEntityExceptionHandler extends ResponseEntityExce
                                                                   HttpStatus status, WebRequest request) {
         ErrorDto errorDto = null;
         Throwable cause = ex.getMostSpecificCause();
-        if ((cause instanceof InvalidFormatException
+        if ((cause instanceof DateTimeException
                 || cause instanceof IllegalArgumentException)
                 && ex.getMessage() != null) {
             errorDto = handleError(ex.getMessage());
@@ -77,7 +77,7 @@ public class RizeGlobalResponseEntityExceptionHandler extends ResponseEntityExce
 
     private ErrorDto handleError(@NotNull String message) {
         List<String> errors = new ArrayList<>();
-        if (message.contains("Cannot deserialize value of type `java.util.Date` from String")) {
+        if (message.contains("Cannot deserialize value of type `java.time.LocalDate` from String")) {
             errors.add(format("Invalid Date value: %s. Please provide the value in yyyy-MM-dd format",
                     message.substring(message.indexOf("String \"") + 8, message.indexOf("\":"))));
         }

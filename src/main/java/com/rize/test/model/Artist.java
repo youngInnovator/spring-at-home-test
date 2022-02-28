@@ -1,8 +1,6 @@
 package com.rize.test.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -14,7 +12,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @Setter
@@ -49,9 +47,8 @@ public class Artist implements Serializable {
     @Enumerated(EnumType.STRING)
     private Category category;
 
-    @JsonFormat(pattern = "yyyy-MM-dd", lenient = OptBoolean.FALSE)
     @NotNull(message = "birthday cannot be empty. Please provide value for birthday")
-    private Date birthday;
+    private LocalDate birthday;
 
     @Size(max = 50, message = "email must be less than or equal to 50")
     @NotEmpty(message = "email cannot be empty. Please provide value for email")
