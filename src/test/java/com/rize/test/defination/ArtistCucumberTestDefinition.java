@@ -30,7 +30,6 @@ import static org.springframework.util.StringUtils.hasText;
 
 @CucumberContextConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-//@DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
 public class ArtistCucumberTestDefinition {
 
     private final static String BASE_URI = "http://localhost";
