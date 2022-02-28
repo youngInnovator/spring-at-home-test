@@ -1,11 +1,5 @@
 package com.rize.test.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import java.util.Arrays;
-import java.util.stream.Stream;
-
 public enum Category {
     ACTOR, //("actor"),
     PAINTER, //("painter"),

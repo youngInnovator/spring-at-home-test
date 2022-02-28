@@ -5,7 +5,6 @@ import com.rize.test.model.Category;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.validation.ConstraintViolationException;
-
 import java.util.Arrays;
 
 import static java.lang.String.format;

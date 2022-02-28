@@ -1,6 +1,16 @@
 Feature: Verify Artist Operations
 
   @ArtistOperations
+  Scenario Outline: Delete artist object
+    Given Artist exist in system with id 1
+    When I send request to delete artist with id "<id>"
+    Then the response will return status <statusCode>
+    And Artist table contain <rows> rows
+    Examples:
+      | id  | statusCode | rows |
+      | 1   | 200        | 0    |
+      | 200 | 404        | 1    |
+
   Scenario Outline: Send a valid Request to create artist object
     When I send a request to create valid artist with firstName "<firstName>", middleName "<middleName>" lastName "<lastName>", category "<category>", birthday "<birthday>", email "<email>" and notes "<notes>"
     Then the response will return status 201 and firstName "<firstName>", middleName "<middleName>", lastName "<lastName>", category "<category>", birthday "<birthday>", email "<email>" and notes "<notes>"
@@ -21,18 +31,8 @@ Feature: Verify Artist Operations
       |           | testMiddle | testLast | ACTOR    | 2021-12-09 | test@test.com | test notes | firstName cannot be empty.           |
       | testFirst | testMiddle |          | ACTOR    | 2021-12-09 | test@test.com | test notes | lastName cannot be empty.            |
       | testFirst | testMiddle | testLast | ACTO5    | 2021-12-09 | test@test.com | test notes | Category value ACTO5 is incorrect.   |
-      | testFirst | testMiddle | testLast | ACTOR    | 2021-18-09 | test@test.com | test notes | Invalid Date value: 2021-18-09        |
+      | testFirst | testMiddle | testLast | ACTOR    | 2021-18-09 | test@test.com | test notes | Invalid Date value: 2021-18-09       |
       | testFirst | testMiddle | testLast | ACTOR    | 2021-12-09 | testtest.com  | test notes | email must be a valid email address. |
-
-  Scenario Outline: Delete artist object
-    Given Artist exist in system with id 1
-    When I send request to delete artist with id "<id>"
-    Then the response will return status <statusCode>
-    And Artist table contain <rows> rows
-    Examples:
-      | id | statusCode | rows |
-      | 2  | 404        | 1    |
-      | 1  | 200        | 0    |
 
   Scenario Outline: Find artist using multiple criterion
     Given Artist exist in system with firstName "yarti" lastName "grad" category "ACTOR" dateOfBirth "2021-12-10"
@@ -42,12 +42,12 @@ Feature: Verify Artist Operations
     Then the response will return status <statusCode>
     And result will contain <numberOfRecords> enteries
     Examples:
-      | category | birthMonth | search |statusCode |numberOfRecords |
-      | ACTOR    |            |        |200        |2               |
-      |          | 12         |        |200        |1               |
-      |          |            | rest   |200        |1               |
-      |          |            | yar    |200        |2               |
-      |          | 12         | yar    |200        |1               |
-      | ACTOR    | 11         |        |200        |1               |
-      | ACTOR    |            | yar    |200        |1               |
-      | ACTOR    | 12         | yar    |200        |1               |
+      | category | birthMonth | search | statusCode | numberOfRecords |
+      | ACTOR    |            |        | 200        | 2               |
+      |          | 12         |        | 200        | 1               |
+      |          |            | rest   | 200        | 1               |
+      |          |            | yar    | 200        | 2               |
+      |          | 12         | yar    | 200        | 1               |
+      | ACTOR    | 11         |        | 200        | 1               |
+      | ACTOR    |            | yar    | 200        | 1               |
+      | ACTOR    | 12         | yar    | 200        | 1               |

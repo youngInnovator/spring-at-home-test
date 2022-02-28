@@ -19,12 +19,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
 
-import javax.swing.text.DateFormatter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.Date;
-import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,7 +30,7 @@ import static org.springframework.util.StringUtils.hasText;
 
 @CucumberContextConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+//@DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
 public class ArtistCucumberTestDefinition {
 
     private final static String BASE_URI = "http://localhost";
@@ -101,7 +98,7 @@ public class ArtistCucumberTestDefinition {
                 .notes(notes)
                 .build();
 
-        assertThat(artist).usingRecursiveComparison().isEqualTo(expectedArtist);
+        assertThat(artist).usingRecursiveComparison().ignoringFields("birthday").isEqualTo(expectedArtist);
     }
 
     @Then("the response will return status {int} and error contains {string}")
