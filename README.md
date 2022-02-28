@@ -69,7 +69,7 @@ Design and implement a Java REST API that CRUDs artists.
 # Solution
 1) Run `./gradlew build` to build the api and dependencies. 
 2) Run `./gradlew test` to run unit tests.
-3) Run `./gradlew cumcumber` to run behavioural tests.  
+3) Run `./gradlew cucumber` to run behavioural tests.  
 4) To start the API server, run `./gradlew bootrun`.
 
  You can also use IDE commands for build/running if you wish
