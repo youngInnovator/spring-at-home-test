@@ -24,6 +24,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import javax.validation.ConstraintViolationException;
+import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -101,9 +102,9 @@ class RizeGlobalResponseEntityExceptionHandlerTest {
 
     private static Stream<Arguments> handleHttpMessageNotReadableValidValues() {
         return Stream.of(
-                arguments("Cannot deserialize value of type `java.util.Date` from String \"2022-18-12\":",
-                        new InvalidFormatException((JsonParser) null, null, null, null),
-                        "Invalid Date value: 2022-18-12. Please provide the value in yyyy-mm-dd format"),
+                arguments("Cannot deserialize value of type `java.time.LocalDate` from String \"2022-18-12\":",
+                        new DateTimeException(null),
+                        "Invalid Date value: 2022-18-12. Please provide the value in yyyy-MM-dd format"),
                 arguments("JSON parse error: No enum constant com.rize.test.model.Category.ACTR;",
                         new IllegalArgumentException(),
                         "Category value ACTR is incorrect. It must be in")

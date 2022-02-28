@@ -51,7 +51,7 @@ Feature: Verify Artist Operations
     And Artist exist in system with firstName "resty" lastName "yart" category "PAINTER" dateOfBirth "2021-11-10" and email "test@test.com"
     When I send request to find all artists
     Then the response will return status 200
-    And result will contain 3 entry(s)
+    And result will contain 3 entries
 
   Scenario: Find artist by id
     Given Artist exist in system with firstName "yarti" lastName "grad" category "ACTOR" dateOfBirth "2021-12-10" and email "test@test.com"
