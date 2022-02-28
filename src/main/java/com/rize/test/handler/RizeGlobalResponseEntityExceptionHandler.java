@@ -78,7 +78,7 @@ public class RizeGlobalResponseEntityExceptionHandler extends ResponseEntityExce
     private ErrorDto handleError(@NotNull String message) {
         List<String> errors = new ArrayList<>();
         if (message.contains("Cannot deserialize value of type `java.util.Date` from String")) {
-            errors.add(format("Invalid Date value: %s. Please provide the value in yyyy-mm-dd format",
+            errors.add(format("Invalid Date value: %s. Please provide the value in yyyy-MM-dd format",
                     message.substring(message.indexOf("String \"") + 8, message.indexOf("\":"))));
         }
 

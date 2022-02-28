@@ -17,6 +17,7 @@ import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.util.StringUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -27,6 +28,7 @@ import java.util.Date;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.springframework.util.StringUtils.*;
 import static org.springframework.util.StringUtils.hasText;
 
 @CucumberContextConfiguration
@@ -61,17 +63,18 @@ public class ArtistCucumberTestDefinition {
         return given();
     }
 
-    @Given("Artist exist in system with firstName {string} lastName {string} category {string} dateOfBirth {string}")
-    public void artistExistInSystemWithFirstNameLastNameCategoryDateOfBirth(String firstName, String lastName, String category, String dateOfBirth) throws ParseException {
+    @Given("Artist exist in system with firstName {string} lastName {string} category {string} dateOfBirth {string} and email {string}")
+    public void artistExistInSystemWithFirstNameLastNameCategoryDateOfBirth(String firstName, String lastName, String category, String dateOfBirth, String email) throws ParseException {
         Artist artist = Artist.builder()
                 .firstName(firstName)
                 .lastName(lastName)
                 .category(Category.valueOf(category))
                 .birthday(new SimpleDateFormat("yyyy-MM-dd").parse(dateOfBirth))
-                .email("test@test.com")
+                .email(email)
                 .build();
 
         artistRepository.save(artist);
+        artistId = artist.getId();
     }
 
     @Given("Artist exist in system")
@@ -116,6 +119,11 @@ public class ArtistCucumberTestDefinition {
         findArtists("");
     }
 
+    @When("I send request to find artist by id")
+    public void iSendRequestToFindArtistById() {
+        findArtists("/" + artistId);
+    }
+
     @Then("the response will return status {int} and firstName {string}, middleName {string}, lastName {string}, category {string}, birthday {string}, email {string} and notes {string}")
     public void theResponseWillReturnStatusAndFirstNameMiddleNameLastNameCategoryBirthdayEmailAndNotes(
             int status, String firstName, String middleName, String lastName, String category, String birthday,
@@ -127,12 +135,12 @@ public class ArtistCucumberTestDefinition {
 
         Artist expectedArtist = Artist.builder()
                 .firstName(firstName)
-                .middleName(middleName)
+                .middleName(isNull(middleName))
                 .lastName(lastName)
                 .category(Category.valueOf(category))
                 .birthday(new SimpleDateFormat("yyyy-MM-dd").parse(birthday))
                 .email(email)
-                .notes(notes)
+                .notes(isNull(notes))
                 .build();
 
         assertThat(artist).usingRecursiveComparison().ignoringFields("birthday").isEqualTo(expectedArtist);
@@ -160,8 +168,8 @@ public class ArtistCucumberTestDefinition {
         assertThat(artistRepository.count()).isEqualTo(rows);
     }
 
-    @And("result will contain {int} enteries")
-    public void resultWillContainNumberOfRecordsEnteries(int numberOfRecords) {
+    @And("result will contain {int} entries")
+    public void resultWillContainNumberOfRecordsEntries(int numberOfRecords) {
         Artist[] artists;
         try {
             artists = response.assertThat()
@@ -193,12 +201,12 @@ public class ArtistCucumberTestDefinition {
     private JSONObject artist(String firstName, String middleName, String lastName, String category, String birthday, String email, String notes) {
         JSONObject body = new JSONObject();
         body.put("firstName", firstName);
-        body.put("middleName", middleName);
+        body.put("middleName", isNull(middleName));
         body.put("lastName", lastName);
         body.put("category", category);
         body.put("birthday", birthday);
         body.put("email", email);
-        body.put("notes", notes);
+        body.put("notes", isNull(notes));
 
         return body;
     }
@@ -215,5 +223,9 @@ public class ArtistCucumberTestDefinition {
 
     private LocalDate toDate(Date date) {
         return LocalDate.ofInstant(date.toInstant(), ZoneId.systemDefault());
+    }
+
+    private String isNull(String value){
+        return hasText(value) ? value : null;
     }
 }
