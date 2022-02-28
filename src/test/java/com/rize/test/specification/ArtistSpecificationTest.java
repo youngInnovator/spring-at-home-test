@@ -44,14 +44,14 @@ class ArtistSpecificationTest {
     private Object value;
 
     @BeforeEach
-    public void setup(){
+    public void setup() {
         key = "key";
         value = new Object();
     }
 
     @ParameterizedTest
-    @CsvSource({":,true","month,true","other,false"})
-    void getPredicate(String operation, boolean expected) {
+    @CsvSource({":,true", "month,true", "other,false"})
+    void testPredicate(String operation, boolean expected) {
         // Given
         when(searchCriteria.getOperation()).thenReturn(operation);
         when(searchCriteria.getKey()).thenReturn(key);
@@ -62,13 +62,12 @@ class ArtistSpecificationTest {
         // When
         Predicate predicate = artistSpecification.toPredicate(root, null, builder);
 
-
         //Then
         assertThat(predicate != null).isEqualTo(expected);
     }
 
     @Test
-    void getPredicateForLike() {
+    void testPredicateForLike() {
         // Given
         when(searchCriteria.getOperation()).thenReturn("like");
         when(searchCriteria.getKey()).thenReturn(key);
@@ -78,7 +77,6 @@ class ArtistSpecificationTest {
 
         // When
         Predicate predicate = artistSpecification.toPredicate(root, null, builder);
-
 
         //Then
         assertNotNull(predicate);

@@ -17,10 +17,11 @@ import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.test.annotation.DirtiesContext;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 
 import static io.restassured.RestAssured.given;
@@ -42,6 +43,8 @@ public class ArtistCucumberTestDefinition {
 
     private ValidatableResponse response;
 
+    private Integer artistId;
+
     private void configureRestAssured() {
         RestAssured.baseURI = BASE_URI;
         RestAssured.port = port;
@@ -58,6 +61,33 @@ public class ArtistCucumberTestDefinition {
         return given();
     }
 
+    @Given("Artist exist in system with firstName {string} lastName {string} category {string} dateOfBirth {string}")
+    public void artistExistInSystemWithFirstNameLastNameCategoryDateOfBirth(String firstName, String lastName, String category, String dateOfBirth) throws ParseException {
+        Artist artist = Artist.builder()
+                .firstName(firstName)
+                .lastName(lastName)
+                .category(Category.valueOf(category))
+                .birthday(new SimpleDateFormat("yyyy-MM-dd").parse(dateOfBirth))
+                .email("test@test.com")
+                .build();
+
+        artistRepository.save(artist);
+    }
+
+    @Given("Artist exist in system")
+    public void artistExistWithInSystem() {
+        Artist artist = Artist.builder()
+                .firstName("firstName")
+                .lastName("lastName")
+                .category(Category.ACTOR)
+                .birthday(new Date())
+                .email("test@test.com")
+                .build();
+
+        artistRepository.save(artist);
+        artistId = artist.getId();
+    }
+
     @When("I send a request to create valid artist with firstName {string}, middleName {string} lastName {string}, category {string}, birthday {string}, email {string} and notes {string}")
     @When("I send a request to create inValid artist with firstName {string}, middleName {string} lastName {string}, category {string}, birthday {string}, email {string} and notes {string}")
     public void iSendARequestToCreateValidArtistWithFirstNameMiddleNameLastNameCategoryBirthdayEmailAndNotes(String firstName, String middleName, String lastName, String category, String birthday, String email, String notes) {
@@ -66,22 +96,30 @@ public class ArtistCucumberTestDefinition {
                 .when().post("/artists").then();
     }
 
-    private JSONObject artist(String firstName, String middleName, String lastName, String category, String birthday, String email, String notes) {
-        JSONObject body = new JSONObject();
-        body.put("firstName", firstName);
-        body.put("middleName", middleName);
-        body.put("lastName", lastName);
-        body.put("category", category);
-        body.put("birthday", birthday);
-        body.put("email", email);
-        body.put("notes", notes);
+    @When("I send request to delete existing artist")
+    public void iSendRequestToDeleteExistingArtist() {
+        deleteArtist(artistId);
+    }
 
-        return body;
+    @When("I send request to delete non existing artist")
+    public void iSendRequestToDeleteNonExistingArtist() {
+        deleteArtist(200);
+    }
+
+    @When("I send request to find artist with category {string} birth-month {string} search {string}")
+    public void iSendRequestToFindArtistWithCategoryBirthMonthBirthMonthSearch(String category, String birthMonth, String search) {
+        findArtists("?" + buildSearchString(category, birthMonth, search));
+    }
+
+    @When("I send request to find all artists")
+    public void iSendRequestToFindAllArtists() {
+        findArtists("");
     }
 
     @Then("the response will return status {int} and firstName {string}, middleName {string}, lastName {string}, category {string}, birthday {string}, email {string} and notes {string}")
-    public void theResponseWillReturnStatusAndFirstNameMiddleNameLastNameCategoryBirthdayEmailAndNotes(int status, String firstName, String middleName, String lastName, String category,
-                                                                                                       String birthday, String email, String notes) throws ParseException {
+    public void theResponseWillReturnStatusAndFirstNameMiddleNameLastNameCategoryBirthdayEmailAndNotes(
+            int status, String firstName, String middleName, String lastName, String category, String birthday,
+            String email, String notes) throws ParseException {
         Artist artist = response.assertThat()
                 .statusCode(equalTo(status))
                 .extract()
@@ -98,6 +136,7 @@ public class ArtistCucumberTestDefinition {
                 .build();
 
         assertThat(artist).usingRecursiveComparison().ignoringFields("birthday").isEqualTo(expectedArtist);
+        assertThat(toDate(artist.getBirthday())).isEqualTo(toDate(expectedArtist.getBirthday()));
     }
 
     @Then("the response will return status {int} and error contains {string}")
@@ -109,32 +148,6 @@ public class ArtistCucumberTestDefinition {
         assertThat(error).contains(message);
     }
 
-    @Given("Artist exist in system with id 1")
-    public void artistExistWithInSystemWithId() {
-        Artist artist = Artist.builder()
-                .firstName("firstName")
-                .lastName("lastName")
-                .category(Category.ACTOR)
-                .birthday(new Date())
-                .email("test@test.com")
-                .build();
-
-        artistRepository.save(artist);
-
-
-    }
-
-    @And("Artist table contain {int} rows")
-    public void artistTableContainRows(int rows) {
-        assertThat(artistRepository.count()).isEqualTo(rows);
-    }
-
-    @When("I send request to delete artist with id {string}")
-    public void iSendRequestToDeleteArtistWithId(String id) {
-        response = requestSpecification()
-                .when().delete("/artists/" + id).then();
-    }
-
     @Then("the response will return status {int}")
     public void theResponseWillReturnStatus(int status) {
         response.assertThat()
@@ -142,23 +155,23 @@ public class ArtistCucumberTestDefinition {
                 .extract();
     }
 
-    @Given("Artist exist in system with firstName {string} lastName {string} category {string} dateOfBirth {string}")
-    public void artistExistInSystemWithFirstNameLastNameCategoryDateOfBirth(String firstName, String lastName, String category, String dateOfBirth) throws ParseException {
-        Artist artist = Artist.builder()
-                .firstName(firstName)
-                .lastName(lastName)
-                .category(Category.valueOf(category))
-                .birthday(new SimpleDateFormat("yyyy-MM-dd").parse(dateOfBirth))
-                .email("test@test.com")
-                .build();
-
-        artistRepository.save(artist);
+    @And("Artist table contain {int} rows")
+    public void artistTableContainRows(int rows) {
+        assertThat(artistRepository.count()).isEqualTo(rows);
     }
 
-    @When("I send request to find artist with category {string} birth-month {string} search {string}")
-    public void iSendRequestToFindArtistWithCategoryBirthMonthBirthMonthSearch(String category, String birthMonth, String search) {
-        response = requestSpecification()
-                .when().get("/artists?"+buildSearchString(category, birthMonth, search)).then();
+    @And("result will contain {int} enteries")
+    public void resultWillContainNumberOfRecordsEnteries(int numberOfRecords) {
+        Artist[] artists;
+        try {
+            artists = response.assertThat()
+                    .extract()
+                    .as(Artist[].class);
+        } catch (Exception ex) {
+            artists = new Artist[]{};
+        }
+
+        assertThat(artists.length).isEqualTo(numberOfRecords);
     }
 
     private String buildSearchString(String category, String birthMonth, String search) {
@@ -177,12 +190,30 @@ public class ArtistCucumberTestDefinition {
         return searchString;
     }
 
-    @And("result will contain {int} enteries")
-    public void resultWillContainNumberOfRecordsEnteries(int numberOfRecords) {
-        Artist[] artists = response.assertThat()
-                .extract()
-                .as(Artist[].class);
+    private JSONObject artist(String firstName, String middleName, String lastName, String category, String birthday, String email, String notes) {
+        JSONObject body = new JSONObject();
+        body.put("firstName", firstName);
+        body.put("middleName", middleName);
+        body.put("lastName", lastName);
+        body.put("category", category);
+        body.put("birthday", birthday);
+        body.put("email", email);
+        body.put("notes", notes);
 
-        assertThat(artists.length).isEqualTo(numberOfRecords);
+        return body;
+    }
+
+    private void deleteArtist(int artistId) {
+        response = requestSpecification()
+                .when().delete("/artists/" + artistId).then();
+    }
+
+    private void findArtists(String query) {
+        response = requestSpecification()
+                .when().get("/artists" + query).then();
+    }
+
+    private LocalDate toDate(Date date) {
+        return LocalDate.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 }

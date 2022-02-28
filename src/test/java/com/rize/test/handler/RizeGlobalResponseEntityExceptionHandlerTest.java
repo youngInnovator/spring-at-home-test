@@ -65,7 +65,7 @@ class RizeGlobalResponseEntityExceptionHandlerTest {
     }
 
     @Test
-    void handleMethodArgumentNotValid() {
+    void testHandleMethodArgumentNotValid() {
         // Given
         when(bindingResult.getFieldErrors()).thenReturn(errors);
 
@@ -83,7 +83,7 @@ class RizeGlobalResponseEntityExceptionHandlerTest {
 
     @ParameterizedTest
     @MethodSource("handleHttpMessageNotReadableValidValues")
-    void handleHttpMessageNotReadableValidValues(String message, Exception exception, String expected) {
+    void testHandleHttpMessageNotReadableValidValues(String message, Exception exception, String expected) {
         // Given
         when(httpMessageNotReadableException.getMostSpecificCause()).thenReturn(exception);
         when(httpMessageNotReadableException.getMessage()).thenReturn(message);
@@ -107,12 +107,12 @@ class RizeGlobalResponseEntityExceptionHandlerTest {
                 arguments("JSON parse error: No enum constant com.rize.test.model.Category.ACTR;",
                         new IllegalArgumentException(),
                         "Category value ACTR is incorrect. It must be in")
-                );
+        );
     }
 
     @ParameterizedTest
     @MethodSource("handleHttpMessageNotReadableInValidValues")
-    void handleHttpMessageNotReadableInValidValues(String message, Exception exception) {
+    void testHandleHttpMessageNotReadableInValidValues(String message, Exception exception) {
         // Given
         when(httpMessageNotReadableException.getMostSpecificCause()).thenReturn(exception);
         when(httpMessageNotReadableException.getMessage()).thenReturn(message);
@@ -139,7 +139,7 @@ class RizeGlobalResponseEntityExceptionHandlerTest {
     }
 
     @Test
-    void artistNotFoundHandler() {
+    void testArtistNotFoundHandler() {
         // Given
         when(artistNotFoundException.getMessage()).thenReturn("Artist not found");
 
@@ -155,7 +155,7 @@ class RizeGlobalResponseEntityExceptionHandlerTest {
 
     @ParameterizedTest
     @CsvSource({"Invalid: Must provide correct date, Must provide correct date", "Must provide correct date, Must provide correct date"})
-    void constraintViolationExceptionHandler(String message, String expectedValue) {
+    void testConstraintViolationExceptionHandler(String message, String expectedValue) {
         // Given
         when(constraintViolationException.getMessage()).thenReturn(message);
 
@@ -167,6 +167,5 @@ class RizeGlobalResponseEntityExceptionHandlerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals(1, errors.size());
         assertEquals(expectedValue, errors.get(0));
-
     }
 }

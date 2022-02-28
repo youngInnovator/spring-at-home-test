@@ -11,9 +11,10 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 public class ErrorDto {
+
     private List<String> errors;
 
-    public ErrorDto(String ... errors){
+    public ErrorDto(String... errors) {
         this.errors = Arrays.asList(errors);
     }
 }

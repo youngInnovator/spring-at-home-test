@@ -15,31 +15,28 @@ class ArtistSpecificationBuilderTest {
     private ArtistSpecificationBuilder artistSpecificationBuilder;
 
     @BeforeEach
-    public void setup(){
+    public void setup() {
         artistSpecificationBuilder = new ArtistSpecificationBuilder();
-
     }
 
     @Test
-    void buildSpecificationWithoutAnyValue() {
+    void testBuildSpecificationWithoutAnyValue() {
         // When
         Specification<Artist> specification = artistSpecificationBuilder.build();
-
 
         //Then
         assertNull(specification);
     }
 
     @ParameterizedTest
-    @CsvSource({"ACTOR,,",",Fir,",",,10","ACTOR,Fir,","ACTOR,,10",",Fir,10","ACTOR,Fir,10"})
-    void buildSpecificationWithValues(String category, String search, Integer birthdayMonth) {
+    @CsvSource({"ACTOR,,", ",Fir,", ",,10", "ACTOR,Fir,", "ACTOR,,10", ",Fir,10", "ACTOR,Fir,10"})
+    void testBuildSpecificationWithValues(String category, String search, Integer birthdayMonth) {
         // When
         Specification<Artist> specification = artistSpecificationBuilder
                 .withCategory(category)
                 .withSearch(search)
                 .withBirthdayMonth(birthdayMonth)
                 .build();
-
 
         //Then
         assertNotNull(specification);

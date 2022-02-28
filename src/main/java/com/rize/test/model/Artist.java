@@ -49,7 +49,7 @@ public class Artist implements Serializable {
     @Enumerated(EnumType.STRING)
     private Category category;
 
-    @JsonFormat(pattern="yyyy-MM-dd", lenient = OptBoolean.FALSE)
+    @JsonFormat(pattern = "yyyy-MM-dd", lenient = OptBoolean.FALSE)
     @NotNull(message = "birthday cannot be empty. Please provide value for birthday")
     private Date birthday;
 
@@ -71,7 +71,7 @@ public class Artist implements Serializable {
     @UpdateTimestamp
     private Instant updatedAt;
 
-    public void setCategory(String category){
+    public void setCategory(String category) {
         this.category = Category.valueOf(category.toUpperCase());
     }
 }

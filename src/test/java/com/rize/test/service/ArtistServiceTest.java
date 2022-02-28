@@ -1,5 +1,8 @@
 package com.rize.test.service;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.rize.test.exception.ArtistNotFoundException;
 import com.rize.test.model.Artist;
 import com.rize.test.model.Category;
 import com.rize.test.respository.ArtistRepository;
@@ -7,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -20,8 +24,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -45,14 +51,14 @@ class ArtistServiceTest {
                 .email("test@test.com")
                 .birthday(BIRTHDAY_DATE)
                 .build();
-        when(artistRepository.findById(any(Integer.class))).thenReturn(Optional.of(artist));
+        when(artistRepository.findById(1)).thenReturn(Optional.of(artist));
         when(artistRepository.findAll()).thenReturn(Collections.singletonList(artist));
         when(artistRepository.findAll(any(Specification.class))).thenReturn(Collections.singletonList(artist));
 
     }
 
     @Test
-    void findArtistById() {
+    void testFindArtistByValidId() {
         // When
         Artist artist = artistService.findArtistById(1);
 
@@ -60,9 +66,18 @@ class ArtistServiceTest {
         assertArtist(artist);
     }
 
+    @Test
+    void testFindArtistByInValidId() {
+        // When
+        Exception exception = assertThrows(ArtistNotFoundException.class, () -> artistService.findArtistById(2));
+
+        //Then
+        assertEquals(exception.getMessage(), "Could not find artist with id: 2");
+    }
+
     @ParameterizedTest
     @CsvSource({",,","ACTOR,,",",Fir,",",,10","ACTOR,Fir,","ACTOR,,10",",Fir,10","ACTOR,Fir,10"})
-    void findArtistsForValidValues(String category, String search, Integer birthdayMonth) {
+    void testFindArtistsForValidValues(String category, String search, Integer birthdayMonth) {
         // When
         List<Artist> artists = artistService.findArtists(category, search, birthdayMonth);
 
@@ -71,12 +86,22 @@ class ArtistServiceTest {
     }
 
     @Test
-    void findArtistsForInValidValues() {
+    void testFindArtistsForInValidValues() {
         // When
         Exception exception = assertThrows(ConstraintViolationException.class, () -> artistService.findArtists("ATOR", null, null));
 
         //Then
         assertTrue(exception.getMessage().contains("Category value ATOR is incorrect. It must be in"));
+    }
+
+    @Test
+    void testSaveArtist(){
+        artistService.saveArtist(any(Artist.class));
+    }
+
+    @Test
+    void testDeleteArtist(){
+        artistService.deleteArtist(any(Artist.class));
     }
 
     private void assertArtist(Artist artist){
